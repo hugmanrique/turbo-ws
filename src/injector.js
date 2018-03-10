@@ -1,6 +1,7 @@
 import { createTextFrame, createBinaryFrame } from './frames/create';
 
-const funcs = {
+// Avoids having to create a wrapper or modify turbo-net's class prototypes
+const functions = {
   send(data) {
     let frame;
 
@@ -18,9 +19,8 @@ const funcs = {
   }
 };
 
-// Don't mess with the net.Socket prototype
 export default function injectMethods(socket) {
-  Object.keys(funcs).forEach(funcName => {
-    socket[funcName] = funcs[funcName];
+  Object.keys(functions).forEach(funcName => {
+    socket[funcName] = functions[funcName];
   });
 }

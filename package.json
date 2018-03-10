@@ -1,0 +1,63 @@
+{
+  "name": "@hugmanrique/turbo-ws",
+  "version": "0.0.1",
+  "license": "MIT",
+  "description": "Blazing fast low-level WebSocket server",
+  "keywords": [
+    "turbo",
+    "websocket",
+    "server"
+  ],
+  "homepage": "https://github.com/hugmanrique/turbo-ws",
+  "bugs": {
+    "url": "https://github.com/hugmanrique/react-markdown-loader/issues"
+  },
+  "author": {
+    "name": "Hugo Manrique",
+    "url": "https://hugmanrique.me",
+    "email": "npm@hugmanrique.me"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hugmanrique/react-markdown-loader"
+  },
+  "scripts": {
+    "prebuild": "npm run clean",
+    "build": "babel src -d dist --ignore 'src/**/*.test.js'",
+    "clean": "del-cli dist",
+    "release": "standard-version",
+    "watch": "npm run build -- -w",
+    "test": "jest"
+  },
+  "engines": {
+    "node": ">=8.10.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.40",
+    "@babel/core": "^7.0.0-beta.40",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.40",
+    "@babel/preset-env": "^7.0.0-beta.40",
+    "del-cli": "^1.1.0",
+    "jest": "^22.4.2",
+    "standard-version": "^4.3.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageReporters": [
+      "text",
+      "html"
+    ],
+    "testMatch": [
+      "**/test/*.js"
+    ]
+  },
+  "dependencies": {
+    "turbo-http": "^0.2.0"
+  }
+}

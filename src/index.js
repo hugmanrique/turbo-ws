@@ -56,7 +56,7 @@ export default class Server extends EventEmitter {
     }
 
     this.sendUpgrade(req, res, clientKey);
-    this.exchange(res);
+    this.exchange(req, res);
   }
 
   sendUpgrade(req, res, clientKey) {
@@ -71,7 +71,7 @@ export default class Server extends EventEmitter {
     res.end(EMPTY_BUFFER, 0);
   }
 
-  exchange({ socket }) {
+  exchange(req, { socket }) {
     const { readBuffer } = this;
 
     injectMethods(socket);
@@ -92,7 +92,7 @@ export default class Server extends EventEmitter {
       processFrame(socket, frame);
     });
 
-    this.emit('connection', socket);
+    this.emit('connection', socket, req);
   }
 
   closeConnection(res, code, headers = {}) {
@@ -117,6 +117,8 @@ export default class Server extends EventEmitter {
       // TODO Send closing frame
       socket.close();
     });
+
+    return new Promise(res => this.server.close(res));
   }
 
   getConnections() {

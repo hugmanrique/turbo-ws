@@ -9,6 +9,7 @@ server.listen(port).then(() => {
   console.log(`⚡ Listening on *:${port}`);
 });
 
-server.on('connection', socket => {
+server.on('connection', (socket, req) => {
+  console.log(req);
   socket.send('message');
 });

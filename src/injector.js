@@ -35,6 +35,6 @@ export default function injectMethods(socket) {
     socket.state = states.CLOSED;
 
     // Emit 'end' event
-    appendToFrameBuffer(frameBuffer, null);
+    appendToFrameBuffer(socket, null);
   });
 }

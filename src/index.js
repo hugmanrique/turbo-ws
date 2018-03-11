@@ -118,7 +118,11 @@ export default class Server extends EventEmitter {
     const frame = wrapInFrame(data);
 
     for (const socket of this.getConnections()) {
-      socket.write(frame);
+      const { state } = socket;
+
+      if (state === states.OPEN) {
+        socket.write(frame);
+      }
     }
   }
 

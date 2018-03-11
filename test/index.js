@@ -11,11 +11,9 @@ describe('turbo-ws', () => {
       server = new Server();
     });
 
-    it('should complete the listen Promise', done => {
+    it('should resolve the listen Promise', done => {
       // Port 0 will find a port automatically for us
-      server.listen(0).then(() => {
-        done();
-      });
+      server.listen(0).then(done);
     });
   });
 

@@ -6,14 +6,15 @@ import {
   isValidPath,
   getAcceptKey,
   asksForUpgrade,
-  setState
+  setState,
+  promisify
 } from './util';
 
 import { states, supportedVersion, protocolSwitchCode } from './constants';
 
 import extractFrame from './frames/extractor';
 import processFrame from './frames/processor';
-import { createDataFrame } from './frames/create';
+import { wrapInFrame } from './buffer';
 import injectMethods from './injector';
 
 export default class Server extends EventEmitter {
@@ -79,7 +80,6 @@ export default class Server extends EventEmitter {
 
     injectMethods(socket);
 
-    // TODO Actually emit events instead of replying with the same message
     socket.read(readBuffer, (err, buffer) => {
       if (err) {
         socket.close();
@@ -116,11 +116,11 @@ export default class Server extends EventEmitter {
   }
 
   broadcast(data) {
-    const frame = createDataFrame(data);
+    const frame = wrapInFrame(data);
 
-    this.getConnections().forEach(socket => {
+    for (const socket of this.getConnections()) {
       socket.write(frame);
-    });
+    }
   }
 
   close() {
@@ -131,7 +131,7 @@ export default class Server extends EventEmitter {
       socket.close();
     });
 
-    return new Promise(res => this.server.close(res));
+    return promisify(this.server.close);
   }
 
   getConnections() {

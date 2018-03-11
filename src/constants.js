@@ -19,3 +19,7 @@ export const frameTwoByteLimit = Math.pow(2, 32);
 
 export const supportedVersion = '13';
 export const protocolSwitchCode = 101;
+
+export function isControlFrame(opCode) {
+  return opCode >= opCodes.CLOSE;
+}

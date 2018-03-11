@@ -1,31 +1,12 @@
-import { opCodes, states } from '../constants';
+import { opCodes, states, isControlFrame } from '../constants';
 import { createPongFrame, createCloseFrame } from './create';
 import { appendToFrameBuffer, createBinaryBuffer } from '../util';
 
 export default function processFrame(socket, { fin, opCode, payload }) {
   const { state, frameBuffer } = socket;
 
-  // Handle control frames
-  switch (opCode) {
-    case opCodes.CLOSE:
-      if (state === states.CLOSING) {
-        socket.close();
-      } else if (state === states.OPEN) {
-        processCloseFrame(socket, payload);
-      }
-
-      return true;
-    case opCodes.PING:
-      if (state === states.OPEN) {
-        const frame = createPongFrame(payload);
-
-        socket.write(frame);
-      }
-
-      return true;
-    case opCodes.PONG:
-      socket.emit('pong', payload.toString());
-      return true;
+  if (isControlFrame(opCode)) {
+    return processControlFrame(socket, opCode, payload);
   }
 
   if (state !== states.OPEN) {
@@ -42,6 +23,32 @@ export default function processFrame(socket, { fin, opCode, payload }) {
   }
 
   return processDataFrame(socket, opCode, fin, payload);
+}
+
+function processControlFrame(socket, opCode, payload) {
+  const { state } = socket;
+
+  switch (opCode) {
+    case opCodes.CLOSE:
+      if (state === states.CLOSING) {
+        socket.close();
+      } else if (state === states.OPEN) {
+        processCloseFrame(socket, payload);
+      }
+
+      return true;
+    case opCodes.PING:
+      if (state === states.OPEN) {
+        const frame = createPongFrame(payload);
+
+        writeAndEmit(socket, frame, 'ping', payload.toString());
+      }
+
+      return true;
+    case opCodes.PONG:
+      socket.emit('pong', payload.toString());
+      return true;
+  }
 }
 
 function processDataFrame(socket, opCode, fin, payload) {

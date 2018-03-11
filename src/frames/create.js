@@ -1,11 +1,16 @@
 import { EMPTY_BUFFER } from '../util';
 import { opCodes, frameByteLimit, frameTwoByteLimit } from '../constants';
+import { toBuffer, allocMetaBuffer, writePayloadLength } from '../buffer';
 
-const createFrame = (fin, opCode, payload) => {
+function createFrame(fin, opCode, payload, convertPayload) {
+  if (convertPayload) {
+    payload = toBuffer(payload);
+  }
+
   const meta = generateMeta(fin, opCode, payload);
 
   return createFrameBuffer(meta, payload);
-};
+}
 
 function createFrameBuffer(meta, payload) {
   // Calculating the length is faster than a for loop
@@ -18,6 +23,10 @@ export const createBinaryFrame = (data, first, fin) => {
   return createFrame(fin, first ? opCodes.BINARY : opCodes.CONTINUATION, data);
 };
 
+export const createPingFrame = payload =>
+  createFrame(true, opCodes.PING, payload, true);
+
+// payload was sent by the client, already a Buffer
 export const createPongFrame = payload =>
   createFrame(true, opCodes.PONG, payload);
 
@@ -31,18 +40,6 @@ export function createCloseFrame(code, reason) {
   }
 
   return createFrame(true, opCodes.CLOSE, payload);
-}
-
-export function createDataFrame(data) {
-  if (Buffer.isBuffer(data)) {
-    // TODO Split buffer in chunks
-    return createBinaryFrame(data, true, true);
-  } else if (typeof data === 'string') {
-    return createTextFrame(data);
-  }
-
-  data = JSON.stringify(data);
-  return createTextFrame(data);
 }
 
 // Creates the metadata part of the frame
@@ -61,22 +58,8 @@ function generateMeta(fin = false, opCode, payload) {
     meta.writeUInt16BE(length, 2);
   } else {
     meta[1] += frameByteLimit + 1;
-    writeBigLength(length);
+    writePayloadLength(length);
   }
 
   return meta;
 }
-
-const allocMetaBuffer = length =>
-  Buffer.alloc(
-    2 + (length < frameByteLimit ? 0 : length < frameTwoByteLimit ? 2 : 8)
-  );
-
-/**
- * Writes 8 bytes containing the length (4 + 4)
- * JS doesn't support integers greater than 2^53
- */
-const writeBigLength = (buffer, length) => {
-  buffer.writeUInt32BE(Math.floor(length / frameTwoByteLimit), 2);
-  buffer.writeUInt32BE(length % frameTwoByteLimit, 6);
-};

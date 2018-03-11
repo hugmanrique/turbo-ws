@@ -69,6 +69,10 @@ Sends data to the client. Depending on the type of the passed object, it will se
 * Objects get converted to strings through `JSON.stringify`.
 * Node's [Buffers](https://nodejs.org/api/buffer.html) get sent as binary data and may be sent in multiple frames.
 
+#### `connection.ping([payload])`
+
+Sends a ping frame that may contain a payload. The client must send a Pong frame with the same payload in response. Check the [`connection.on('pong')`](#connectiononpong) method for more details.
+
 #### `connection.close([callback])`
 
 Closes the connection.
@@ -112,6 +116,10 @@ connection.on('binary', stream => {
   });
 });
 ```
+
+#### `connection.on('ping')`
+
+Emitted when the server received a [Ping frame](https://tools.ietf.org/html/rfc6455#section-5.5.2) from the client.
 
 #### `connection.on('pong')`
 

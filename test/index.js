@@ -20,6 +20,12 @@ describe('turbo-ws', () => {
   });
 
   describe('connections', () => {
+    afterEach(() => {
+      server.removeAllListeners();
+      socket.removeAllListeners();
+      ws.removeAllListeners();
+    });
+
     test('client connects succesfully', () => {
       const { address, port } = server.server.address();
       ws = new WebSocket(`ws://${address}:${port}`);
@@ -32,34 +38,76 @@ describe('turbo-ws', () => {
         new Promise(res => {
           server.on('connection', socketObj => {
             socket = socketObj;
-            server.removeAllListeners('connection');
-
             res();
           });
         })
       ]);
     });
 
-    test('server receives the client message', () => {
-      const testMessage = 'test message';
+    const testMessage = 'test message';
 
-      return new Promise(res => {
-        socket.on('text', message => {
-          expect(message).toBe(testMessage);
+    test('server receives text frame', done => {
+      expect.assertions(1);
 
-          socket.removeAllListeners('text');
-          res();
-        });
-
-        ws.send(testMessage);
+      socket.on('text', message => {
+        expect(message).toBe(testMessage);
+        done();
       });
+
+      ws.send(testMessage);
     });
 
-    /*test('server handles disconnect', () => {
+    test('client receives text frame', done => {
       expect.assertions(1);
-      ws.terminate();
 
-      socket.on('close', callExpect);
+      ws.on('message', message => {
+        expect(message).toBe(testMessage);
+        done();
+      });
+
+      socket.send(testMessage);
+    });
+
+    test('client receives binary frame', done => {
+      expect.assertions(1);
+      const testBuf = Buffer.allocUnsafe(4);
+
+      ws.on('message', buf => {
+        expect(buf).toEqual(testBuf);
+        done();
+      });
+
+      socket.send(testBuf);
+    });
+
+    /*test('server pongs', done => {
+      expect.assertions(1);
+
+      socket.on('ping', payload => {
+        expect(payload).toBe(testMessage);
+        done();
+      });
+
+      ws.ping(testMessage);
     });*/
+
+    test('client receives ping', done => {
+      expect.assertions(1);
+
+      ws.on('ping', payload => {
+        expect(payload).toBe(testMessage);
+        done();
+      });
+
+      socket.ping(testMessage);
+    });
+
+    test('server handles disconnect', done => {
+      socket.on('close', () => {
+        done();
+      });
+
+      ws.terminate();
+    });
   });
 });

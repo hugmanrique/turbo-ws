@@ -61,7 +61,7 @@ server.listen(port).then(() => {
 
 ## Methods
 
-#### `connection.send(object)`
+#### `connection.send(data)`
 
 Sends data to the client. Depending on the type of the passed object, it will send the data in one or multiple frames:
 
@@ -76,6 +76,10 @@ Sends a ping frame that may contain a payload. The client must send a Pong frame
 #### `connection.close([callback])`
 
 Closes the connection.
+
+#### `server.broadcast(data)`
+
+Sends data to all the clients. Follows the same logic as [`connection.send(data)`](#connectionsenddata)
 
 #### `server.getConnections()`
 

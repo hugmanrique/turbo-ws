@@ -1,6 +1,6 @@
 {
   "name": "@hugmanrique/turbo-ws",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "description": "Blazing fast low-level WebSocket server",
   "keywords": [
@@ -30,6 +30,7 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "babel src -d dist --ignore 'src/**/*.test.js'",
+    "prepublish": "npm run prebuild && npm run build",
     "clean": "del-cli dist",
     "release": "standard-version",
     "watch": "npm run build -- -w",

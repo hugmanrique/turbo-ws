@@ -6,6 +6,11 @@ let ws;
 let socket;
 
 describe('turbo-ws', () => {
+  afterAll(() => {
+    server.close();
+    ws.close();
+  });
+
   describe('server', () => {
     it('should create instance without errors', () => {
       server = new Server();

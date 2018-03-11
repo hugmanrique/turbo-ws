@@ -24,7 +24,7 @@ export default function injectMethods(socket) {
 
   // Don't override socket.close method
   socket.on('close', () => {
-    const { state, frameBuffer } = socket;
+    const { state } = socket;
 
     if (state === states.CONNECTING || state === states.OPEN) {
       const frame = createCloseFrame(1006, '');

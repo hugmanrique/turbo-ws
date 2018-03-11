@@ -1,6 +1,6 @@
 {
   "name": "@hugmanrique/turbo-ws",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "license": "MIT",
   "description": "Blazing fast low-level WebSocket server",
   "keywords": [

@@ -71,7 +71,7 @@ function processDataFrame(socket, opCode, fin, payload) {
     }
   } else {
     if (!frameBuffer) {
-      [frameBuffer] = createBinaryBuffer();
+      frameBuffer = createBinaryBuffer();
 
       socket.emit('binary', frameBuffer);
     }

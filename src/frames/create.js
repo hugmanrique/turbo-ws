@@ -33,6 +33,18 @@ export function createCloseFrame(code, reason) {
   return createFrame(true, opCodes.CLOSE, payload);
 }
 
+export function createDataFrame(data) {
+  if (Buffer.isBuffer(data)) {
+    // TODO Split buffer in chunks
+    return createBinaryFrame(data, true, true);
+  } else if (typeof data === 'string') {
+    return createTextFrame(data);
+  }
+
+  data = JSON.stringify(data);
+  return createTextFrame(data);
+}
+
 // Creates the metadata part of the frame
 function generateMeta(fin = false, opCode, payload) {
   const { length } = payload;

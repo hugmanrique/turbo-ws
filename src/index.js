@@ -5,23 +5,25 @@ import {
   getResponseCode,
   isValidPath,
   getAcceptKey,
-  asksForUpgrade
+  asksForUpgrade,
+  setState
 } from './util';
 
-import { supportedVersion, protocolSwitchCode } from './constants';
+import { states, supportedVersion, protocolSwitchCode } from './constants';
 
 import extractFrame from './frames/extractor';
 import processFrame from './frames/processor';
+import { createDataFrame } from './frames/create';
 import injectMethods from './injector';
 
 export default class Server extends EventEmitter {
-  constructor({ path = '', readBufferSize = 32 * 1024 } = {}) {
+  constructor({ path = '', readBufferSize = 32 * 1024, ...opts } = {}) {
     super();
     this.handleRequest = this.handleRequest.bind(this);
 
     this.path = path;
     this.readBuffer = Buffer.alloc(readBufferSize);
-    this.server = http.createServer(this.handleRequest);
+    this.server = http.createServer(opts, this.handleRequest);
   }
 
   listen(port) {
@@ -32,6 +34,7 @@ export default class Server extends EventEmitter {
 
   handleRequest(req, res) {
     const { path } = this;
+    setState(res, states.CONNECTING);
 
     if (!isValidPath(path, req)) {
       return this.closeConnection(res, 400);
@@ -92,6 +95,7 @@ export default class Server extends EventEmitter {
       processFrame(socket, frame);
     });
 
+    socket.state = states.OPEN;
     this.emit('connection', socket, req);
   }
 
@@ -107,7 +111,16 @@ export default class Server extends EventEmitter {
       res.setHeader(key, headers[key]);
     });
 
+    setState(res, states.CLOSED);
     res.end(message);
+  }
+
+  broadcast(data) {
+    const frame = createDataFrame(data);
+
+    this.getConnections().forEach(socket => {
+      socket.write(frame);
+    });
   }
 
   close() {

@@ -37,17 +37,22 @@ export const unmask = (buffer, maskOffset, payload) => {
   }
 };
 
-export const appendToFrameBuffer = (socket, buffer) => {
+export const appendToFrameBuffer = (socket, buffer, binary) => {
   if (!buffer) {
     return (socket.frameBuffer = null);
   }
 
   const original = socket.frameBuffer;
 
-  socket.frameBuffer = original ? original + buffer : buffer;
+  if (binary) {
+    return original.addData(buffer);
+  }
+
+  return (socket.frameBuffer = original ? original + buffer : buffer);
 };
 
 export const createBinaryBuffer = socket => {
-  // TODO Implement BinaryStream
   return (socket.frameBuffer = new BinaryStream());
 };
+
+export const setState = (res, state) => res && (res.socket.state = state);

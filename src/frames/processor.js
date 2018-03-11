@@ -54,7 +54,7 @@ function processDataFrame(socket, opCode, fin, payload) {
 
   if (opCode === opCodes.TEXT) {
     payload = payload.toString();
-    appendToFrameBuffer(socket, payload, false);
+    [frameBuffer] = appendToFrameBuffer(socket, payload, false);
 
     if (fin) {
       socket.emit('text', frameBuffer);

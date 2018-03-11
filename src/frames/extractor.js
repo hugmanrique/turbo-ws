@@ -18,14 +18,14 @@ export default function extractFrame(buffer) {
     return;
   }
 
-  const fin = hb === 0x8;
+  const fin = hb === opCodes.CLOSE;
   const opCode = b % 16;
 
   if (!isValidOpCode(opCode)) {
     return;
   }
 
-  if (opCode >= 0x8 && !fin) {
+  if (opCode >= opCodes.CLOSE && !fin) {
     // Control frames must not be fragmented
     return;
   }

@@ -22,8 +22,10 @@ export default function injectMethods(socket) {
     socket[funcName] = functions[funcName];
   });
 
-  // Don't override socket.close method
-  socket.on('close', () => {
+  // Override socket.close method
+  const originalFn = socket.close.bind(socket);
+
+  socket.close = callback => {
     const { state } = socket;
 
     if (state === states.CONNECTING || state === states.OPEN) {
@@ -36,5 +38,6 @@ export default function injectMethods(socket) {
 
     // Emit 'end' event
     appendToFrameBuffer(socket, null);
-  });
+    originalFn(callback);
+  };
 }

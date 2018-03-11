@@ -10,7 +10,7 @@ server.listen(port).then(() => {
 });
 
 server.on('connection', socket => {
-  //socket.send('message');
+  socket.send('message');
 
   socket.on('text', message => {
     console.log(`Client says "${message}"`);

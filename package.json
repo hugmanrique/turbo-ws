@@ -3,11 +3,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "description": "Blazing fast low-level WebSocket server",
-  "keywords": [
-    "turbo",
-    "websocket",
-    "server"
-  ],
+  "keywords": ["turbo", "websocket", "server"],
   "homepage": "https://github.com/hugmanrique/turbo-ws",
   "bugs": {
     "url": "https://github.com/hugmanrique/react-markdown-loader/issues"
@@ -17,11 +13,7 @@
     "url": "https://hugmanrique.me",
     "email": "npm@hugmanrique.me"
   },
-  "files": [
-    "dist/",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist/", "README.md", "LICENSE"],
   "main": "dist/index.js",
   "repository": {
     "type": "git",
@@ -33,7 +25,9 @@
     "clean": "del-cli dist",
     "release": "standard-version",
     "watch": "npm run build -- -w",
-    "test": "jest"
+    "test": "jest --coverage",
+    "test-ci":
+      "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "engines": {
     "node": ">=8.10.0"
@@ -55,12 +49,7 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "coverageReporters": [
-      "text",
-      "html"
-    ],
-    "testMatch": [
-      "**/test/*.js"
-    ]
+    "coverageReporters": ["text", "html"],
+    "testMatch": ["**/test/*.js"]
   }
 }

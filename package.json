@@ -1,9 +1,13 @@
 {
   "name": "@hugmanrique/turbo-ws",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "license": "MIT",
   "description": "Blazing fast low-level WebSocket server",
-  "keywords": ["turbo", "websocket", "server"],
+  "keywords": [
+    "turbo",
+    "websocket",
+    "server"
+  ],
   "homepage": "https://github.com/hugmanrique/turbo-ws",
   "bugs": {
     "url": "https://github.com/hugmanrique/turbo-ws/issues"
@@ -13,7 +17,11 @@
     "url": "https://hugmanrique.me",
     "email": "npm@hugmanrique.me"
   },
-  "files": ["dist/", "README.md", "LICENSE"],
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "dist/index.js",
   "repository": {
     "type": "git",
@@ -52,6 +60,8 @@
     "testEnvironment": "node",
     "collectCoverage": true,
     "coverageDirectory": "coverage/",
-    "testMatch": ["**/test/*.js"]
+    "testMatch": [
+      "**/test/*.js"
+    ]
   }
 }

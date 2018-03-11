@@ -56,5 +56,3 @@ export const createBinaryBuffer = socket => {
 };
 
 export const setState = (res, state) => res && (res.socket.state = state);
-
-export const promisify = fn => new Promise(res => fn(res));

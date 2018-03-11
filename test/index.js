@@ -80,6 +80,7 @@ describe('turbo-ws', () => {
       socket.send(testBuf);
     });
 
+    // FIXME: For some reason ws doesn't send ping frames
     /*test('server pongs', done => {
       expect.assertions(1);
 
@@ -95,7 +96,7 @@ describe('turbo-ws', () => {
       expect.assertions(1);
 
       ws.on('ping', payload => {
-        expect(payload).toBe(testMessage);
+        expect(payload.toString()).toBe(testMessage);
         done();
       });
 

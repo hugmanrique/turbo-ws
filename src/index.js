@@ -6,8 +6,7 @@ import {
   isValidPath,
   getAcceptKey,
   asksForUpgrade,
-  setState,
-  promisify
+  setState
 } from './util';
 
 import { states, supportedVersion, protocolSwitchCode } from './constants';
@@ -124,14 +123,13 @@ export default class Server extends EventEmitter {
   }
 
   close() {
-    this.emit('close');
-
     this.getConnections().forEach(socket => {
-      // TODO Send closing frame
       socket.close();
     });
 
-    return promisify(this.server.close);
+    return new Promise(res => {
+      this.server.close(res);
+    }).then(() => this.emit('close'));
   }
 
   getConnections() {

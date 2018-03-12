@@ -18,14 +18,14 @@ All notable changes to this project will be documented in this file. See [standa
 
 
 <a name="0.0.5"></a>
-## [0.0.5](https://github.com/hugmanrique/react-markdown-loader/compare/v0.0.4...v0.0.5) (2018-03-11)
+## [0.0.5](https://github.com/hugmanrique/turbo-ws/compare/v0.0.4...v0.0.5) (2018-03-11)
 
 
 
 <a name="0.0.4"></a>
-## [0.0.4](https://github.com/hugmanrique/react-markdown-loader/compare/v0.0.3...v0.0.4) (2018-03-11)
+## [0.0.4](https://github.com/hugmanrique/turbo-ws/compare/v0.0.3...v0.0.4) (2018-03-11)
 
 
 
 <a name="0.0.3"></a>
-## [0.0.3](https://github.com/hugmanrique/react-markdown-loader/compare/v0.0.2...v0.0.3) (2018-03-11)
+## [0.0.3](https://github.com/hugmanrique/turbo-ws/compare/v0.0.2...v0.0.3) (2018-03-11)

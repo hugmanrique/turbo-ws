@@ -1,4 +1,4 @@
-import { opCodes, frameByteLimit, frameTwoByteLimit } from '../constants';
+import { opCodes, frameByteLimit, frameTwoByteLimit, isControlFrame } from '../constants';
 import { unmask } from '../util';
 
 const validOpCodes = Object.values(opCodes);
@@ -25,7 +25,7 @@ export default function extractFrame(buffer) {
     return;
   }
 
-  if (opCode >= opCodes.CLOSE && !fin) {
+  if (isControlFrame(opCode) && !fin) {
     // Control frames must not be fragmented
     return;
   }

@@ -16,3 +16,7 @@ server.on('connection', socket => {
     console.log(`Client says "${message}"`);
   });
 });
+
+server.on('request', (req, res) => {
+  res.end(`hello to ${req.url}`);
+});

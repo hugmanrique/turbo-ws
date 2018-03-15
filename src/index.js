@@ -17,13 +17,13 @@ import { wrapInFrame } from './buffer';
 import injectMethods from './injector';
 
 export default class Server extends EventEmitter {
-  constructor({ path = '', readBufferSize = 32 * 1024, ...opts } = {}) {
+  constructor({ readBufferSize = 32 * 1024, ...opts } = {}) {
     super();
     this.handleRequest = this.handleRequest.bind(this);
 
-    this.path = path;
     this.readBuffer = Buffer.alloc(readBufferSize);
-    this.server = http.createServer(opts, this.handleRequest);
+    this.server = opts.server || http.createServer(opts);
+    this.server.on('request', this.handleRequest.bind(this));
   }
 
   listen(port) {
@@ -33,14 +33,12 @@ export default class Server extends EventEmitter {
   }
 
   handleRequest(req, res) {
-    const { path } = this;
     setState(res, states.CONNECTING);
-
-    if (!isValidPath(path, req)) {
-      return this.closeConnection(res, 400);
+    const headers = req.getAllHeaders();
+    if (/websocket/i.test(headers.get('Upgrade')) && /upgrade/i.test(headers.get('Connection'))) {
+      return this.handleUpgrade(req, res);
     }
-
-    return this.handleUpgrade(req, res);
+    this.emit('request', req, res);
   }
 
   handleUpgrade(req, res) {

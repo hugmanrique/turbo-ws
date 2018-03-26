@@ -41,7 +41,8 @@
     "node": ">=8.10.0"
   },
   "dependencies": {
-    "turbo-http": "^0.2.0"
+    "turbo-http": "^0.3.0",
+    "utf-8-validate": "^4.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.40",

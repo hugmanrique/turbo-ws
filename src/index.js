@@ -1,142 +1,124 @@
 import { EventEmitter } from 'events';
 import http from 'turbo-http';
+
 import {
-  EMPTY_BUFFER,
-  getResponseCode,
-  isValidPath,
-  getAcceptKey,
+  statusCodes,
   asksForUpgrade,
-  setState
+  shouldHandleRequest,
+  pathEquals,
+  getUpgradeKey,
+  addListeners,
+  forwardEvent
 } from './util';
 
-import { states, supportedVersion, protocolSwitchCode } from './constants';
-
-import extractFrame from './frames/extractor';
-import processFrame from './frames/processor';
-import { wrapInFrame } from './buffer';
-import injectMethods from './injector';
+import { EMPTY_BUFFER } from './constants';
 
 export default class Server extends EventEmitter {
-  constructor({ path = '', readBufferSize = 32 * 1024, ...opts } = {}) {
+  constructor({
+    maxPayload = 100 * 1024 * 1024,
+    server,
+    host,
+    port,
+    path = ''
+  }) {
     super();
-    this.handleRequest = this.handleRequest.bind(this);
 
-    this.path = path;
-    this.readBuffer = Buffer.alloc(readBufferSize);
-    this.server = http.createServer(opts, this.handleRequest);
-  }
+    if (!server && (!host || !port)) {
+      throw new TypeError(
+        'Either the "server" or the "host" and "port" options must be specified'
+      );
+    }
 
-  listen(port) {
-    return new Promise(res => {
-      this.server.listen(port, res);
+    if (!server) {
+      server = http.createServer(this.handleRequest);
+      server.listen(port);
+    }
+
+    // TODO Document how to attach request callback for custom servers
+
+    this.server = server;
+    this.options = { path, maxPayload };
+
+    addListeners(server, {
+      listening: forwardEvent('listening'),
+      error: forwardEvent('error')
     });
   }
 
   handleRequest(req, res) {
-    const { path } = this;
-    setState(res, states.CONNECTING);
+    const { socket } = req;
 
-    if (!isValidPath(path, req)) {
-      return this.closeConnection(res, 400);
+    // Handle premature socket errors
+    socket.on('error', onSocketError);
+
+    if (!asksForUpgrade(req)) {
+      return this.askToUpgrade(res);
     }
 
-    return this.handleUpgrade(req, res);
+    const version = req.getHeader('Sec-WebSocket-Version');
+
+    if (!shouldHandleRequest(this, req, version)) {
+      return closeConnection(socket, res, 400);
+    }
+
+    this.upgradeConnection(req, res);
   }
 
-  handleUpgrade(req, res) {
-    const headers = req.getAllHeaders();
-    const version = headers.get('Sec-WebSocket-Version');
-    const clientKey = headers.get('Sec-WebSocket-Key');
+  askToUpgrade(res) {
+    const body = statusCodes[426];
 
-    if (version !== supportedVersion) {
-      return this.closeConnection(res, 400, {
-        'Sec-WebSocket-Version': supportedVersion
-      });
-    }
-
-    if (!asksForUpgrade(req, headers, clientKey)) {
-      return this.closeConnection(res, 400);
-    }
-
-    this.sendUpgrade(req, res, clientKey);
-    this.exchange(req, res);
+    // Ask the client to upgrade its protocol
+    res.statusCode = 426;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end(body);
   }
 
-  sendUpgrade(req, res, clientKey) {
-    const key = getAcceptKey(clientKey);
+  upgradeConnection(req, res) {
+    const { socket } = req;
 
-    res.statusCode = protocolSwitchCode;
+    if (!socket.readable || !socket.writable) {
+      return socket.destroy();
+    }
+
+    const clientKey = req.getHeader('Sec-WebSocket-Key');
+    const key = getUpgradeKey(clientKey);
+
+    res.statusCode = 101;
+
     res.setHeader('Upgrade', 'websocket');
-    res.setHeader('Connection', 'Upgrade');
+    res.setHeader('Connection', 'upgrade');
     res.setHeader('Sec-WebSocket-Accept', key);
 
-    // Finish the handshake but keep the connection open
+    // Finish the handshake but keep connection open
     res.end(EMPTY_BUFFER, 0);
-  }
 
-  exchange(req, { socket }) {
-    const { readBuffer } = this;
+    // Remove connection error listener
+    socket.removeListener('error', onSocketError);
 
-    injectMethods(socket);
-
-    socket.read(readBuffer, (err, buffer) => {
-      if (err) {
-        socket.close();
-        throw err;
-      }
-
-      const frame = extractFrame(buffer);
-
-      if (!frame) {
-        return;
-      }
-
-      processFrame(socket, frame);
-    });
-
-    socket.state = states.OPEN;
     this.emit('connection', socket, req);
   }
 
-  closeConnection(res, code, headers = {}) {
-    const message = getResponseCode(code);
+  // See if request should be handled by this server
+  shouldHandle(req) {
+    const { path } = this.options;
 
-    res.statusCode = code;
-    res.setHeader('Connection', 'close');
-    res.setHeader('Content-Type', 'text/plain');
-    res.setHeader('Content-Length', message.length);
-
-    Object.keys(headers).forEach(key => {
-      res.setHeader(key, headers[key]);
-    });
-
-    setState(res, states.CLOSED);
-    res.end(message);
+    return path === '' || pathEquals(path, req);
   }
+}
 
-  broadcast(data) {
-    const frame = wrapInFrame(data);
+function closeConnection(socket, res, code, message) {
+  message = message || statusCodes[code];
 
-    for (const socket of this.getConnections()) {
-      const { state } = socket;
+  res.statusCode = code;
+  res.setHeader('Connection', 'close');
+  res.setHeader('Content-Type', 'text/plain');
 
-      if (state === states.OPEN) {
-        socket.write(frame);
-      }
-    }
-  }
+  res.end(message);
 
-  close() {
-    this.getConnections().forEach(socket => {
-      socket.close();
-    });
+  socket.removeListener('error', onSocketError);
+  socket.close();
+}
 
-    return new Promise(res => {
-      this.server.close(res);
-    }).then(() => this.emit('close'));
-  }
-
-  getConnections() {
-    return this.server.connections;
-  }
+function onSocketError() {
+  this.destroy();
 }

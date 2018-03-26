@@ -1,58 +1,56 @@
 import crypto from 'crypto';
-import statuses from 'turbo-http/http-status';
 import { parse } from 'url';
+import { magicValue } from './constants';
 
-import BinaryStream from './binaryStream';
+import statusCodes from 'turbo-http/http-status';
+export { statusCodes };
 
-const WS_MAGIC_VALUE = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
-export const EMPTY_BUFFER = Buffer.alloc(0);
-
-export const getAcceptKey = clientKey => {
-  return crypto
-    .createHash('sha1')
-    .update(`${clientKey}${WS_MAGIC_VALUE}`)
-    .digest('base64');
-};
-
-export const isValidPath = (path, req) => {
-  return path === '' || getPath(req) === path;
-};
-
-const getPath = req => parse(req.url).pathname;
-
-export const getResponseCode = code => Buffer.from(statuses[code]);
-
-export const asksForUpgrade = (req, headers, clientKey) => {
+// Upgrade utils
+export function asksForUpgrade(req) {
   return (
     req.method === 'GET' &&
-    headers.get('Upgrade') === 'websocket' &&
-    headers.get('Connection').includes('Upgrade') &&
-    clientKey
+    req.getHeader('Upgrade').toLowerCase() === 'websocket'
   );
-};
+}
 
-export const unmask = (buffer, maskOffset, payload) => {
-  for (let i = 0; i < payload.length; i++) {
-    payload[i] ^= buffer[maskOffset + i % 4];
+export function shouldHandleRequest(server, req, version) {
+  return (
+    isValidVersion(version) && server.shouldHandle(req) // TODO Create version func
+  );
+}
+
+function isValidVersion(version) {
+  return version === 8 || version === 13;
+}
+
+export function pathEquals(path, req) {
+  return parse(req.url).pathname === path;
+}
+
+export function getUpgradeKey(clientKey) {
+  return crypto
+    .createHash('sha1')
+    .update(`${clientKey}${magicValue}`, 'binary')
+    .digest('base64');
+}
+
+// EventEmitter utils
+
+export function addListeners(server, events) {
+  const eventNames = Object.keys(events);
+
+  for (const event of eventNames) {
+    server.on(event, events[event]);
   }
-};
 
-export const appendToFrameBuffer = (socket, buffer, binary) => {
-  if (!buffer) {
-    return (socket.frameBuffer = null);
-  }
+  // Return anonymous function to remove all the added listeners when called
+  return function() {
+    for (const event of eventNames) {
+      server.removeListener(event, events[event]);
+    }
+  };
+}
 
-  const original = socket.frameBuffer;
-
-  if (binary) {
-    return original.addData(buffer);
-  }
-
-  return (socket.frameBuffer = original ? original + buffer : buffer);
-};
-
-export const createBinaryBuffer = socket => {
-  return (socket.frameBuffer = new BinaryStream());
-};
-
-export const setState = (res, state) => res && (res.socket.state = state);
+export function forwardEvent(server, eventName) {
+  return server.emit.bind(server, eventName);
+}

@@ -1,5 +1,6 @@
 import { Writable } from 'stream';
 import { isValidUtf8, isValidStatusCode } from '../validate';
+import { unmask } from '../buffers';
 import {
   opCodes,
   frameSizeLimit,
@@ -125,7 +126,6 @@ class Receiver extends Writable {
     this.opCode = buffer[0] & 0xf;
     this.payloadLength = buffer[1] & 0x7f;
 
-    // TODO Create opCode constants
     if (this.opCode === opCodes.CONTINUATION) {
       if (compressed) {
         error('RSV1 must be clear', 1002);
@@ -236,7 +236,7 @@ class Receiver extends Writable {
       data = this.consume(this.payloadLength);
 
       if (this.masked) {
-        // TODO Unmask data
+        unmask(data, this.mask);
       }
     }
 
@@ -286,7 +286,6 @@ class Receiver extends Writable {
       this.loop = false;
 
       if (!data.length) {
-        // TODO Rewrite
         this.emit('conclude', 1005);
         this.end();
       } else if (data.length === 1) {
@@ -302,7 +301,6 @@ class Receiver extends Writable {
 
         validateUtf8(buffer);
 
-        // TODO Rewrite
         this.emit('conclude', code, buffer.toString());
         this.end();
       }

@@ -11,7 +11,7 @@ import {
 const statusCodeKey = Symbol('status-code');
 const stopLoopKey = Symbol('stop-loop');
 
-const states = {
+export const states = {
   GET: 0,
   GET_PAYLOAD_LENGTH_16: 1,
   GET_PAYLOAD_LENGTH_64: 2,
@@ -21,7 +21,7 @@ const states = {
 };
 
 class Receiver extends Writable {
-  constructor(maxPayload) {
+  constructor(extensions, maxPayload) {
     super();
 
     this.buffers = [];
@@ -38,6 +38,7 @@ class Receiver extends Writable {
     this.messageLength = 0;
     this.fragments = new Set();
 
+    this.extensions = extensions;
     this.state = states.GET;
     this.loop = false;
   }
@@ -88,7 +89,7 @@ class Receiver extends Writable {
             this.getMask();
             break;
           case states.GET_DATA:
-            this.getData();
+            this.getData(callback);
             break;
           // Inflating state
           default:
@@ -224,7 +225,7 @@ class Receiver extends Writable {
     this.state = states.GET_DATA;
   }
 
-  getData() {
+  getData(callback) {
     let data = EMPTY_BUFFER;
 
     if (this.payloadLength) {
@@ -244,11 +245,22 @@ class Receiver extends Writable {
       return this.controlMessage(data, this.mask);
     }
 
+    // Let extensions process the data
+    for (const extension of this.extensions) {
+      const stopLoop = extension.processData(this, data, callback);
+
+      if (stopLoop) {
+        return;
+      }
+    }
+
+    /*this.extensions.forEach(extension => extension.processData(data, callback));
+
     if (this.compressed) {
       this.state = states.INFLATING;
-      // TODO Decompress
+      // TODO Decompress and call callback
       return;
-    }
+    }*/
 
     if (data.length) {
       this.messageLength = this.totalPayloadLength;

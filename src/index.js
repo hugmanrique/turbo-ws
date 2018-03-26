@@ -16,6 +16,7 @@ import { EMPTY_BUFFER } from './constants';
 export default class Server extends EventEmitter {
   constructor({
     maxPayload = 100 * 1024 * 1024,
+    extensions = [],
     server,
     host,
     port,
@@ -38,6 +39,11 @@ export default class Server extends EventEmitter {
 
     this.server = server;
     this.options = { path, maxPayload };
+    this.extensions = new Set(extensions);
+
+    for (const extension of this.extensions) {
+      extension.setup(maxPayload);
+    }
 
     addListeners(server, {
       listening: forwardEvent('listening'),
@@ -60,6 +66,12 @@ export default class Server extends EventEmitter {
     if (!shouldHandleRequest(this, req, version)) {
       return closeConnection(socket, res, 400);
     }
+
+    /*for (const extension of this.extensions) {
+
+    }*/
+
+    // TODO Handle extension negotiation
 
     this.upgradeConnection(req, res);
   }

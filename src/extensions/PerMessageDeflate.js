@@ -2,9 +2,8 @@ import Extension from '../Extension';
 import { states } from '../socket/Receiver';
 
 class PerMessageDeflate extends Extension {
-  constructor(options, maxPayload) {
-    super(options, maxPayload);
-  }
+  // TODO
+  //name = ''
 
   getName() {
     return '';

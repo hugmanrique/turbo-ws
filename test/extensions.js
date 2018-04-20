@@ -8,12 +8,8 @@ class DummyExtension extends Extension {
     return 'Dummy';
   }
 
-  /**
-   * Accept an extension negotiation offer.
-   * @param {Array} offers Extension negotiation offers
-   * @return {Object} Accepted params
-   */
   static accept(offers) {
+    // Always return the first one
     return offers[0];
   }
 }

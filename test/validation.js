@@ -20,7 +20,9 @@ describe('validation', () => {
       4999
     ];
 
-    closeCodes.forEach(code => expect(isValidStatusCode(code)).toBe(true));
+    const value = reduceBoolArray(closeCodes.map(isValidStatusCode));
+
+    expect(value).toBe(true);
   });
 
   test('invalid close frame status code fail', () => {
@@ -39,6 +41,14 @@ describe('validation', () => {
       7505
     ];
 
-    invalidCodes.forEach(code => expect(isValidStatusCode(code)).toBe(false));
+    const value = reduceBoolArray(
+      invalidCodes.map(code => !isValidStatusCode(code))
+    );
+
+    expect(value).toBe(true);
   });
 });
+
+function reduceBoolArray(array) {
+  return array.reduce((prev, current) => prev && current);
+}

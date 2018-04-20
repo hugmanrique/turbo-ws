@@ -7,7 +7,7 @@
 [![coverage][cover]][cover-url]
 [![license][license]][license-url]
 
-A blazing fast low-level WebSocket server based on [turbo-net](https://github.com/mafintosh/turbo-net).
+A blazing fast low-level WebSocket server based on [turbo-net](https://github.com/mafintosh/turbo-net) and the awesome [ws](https://github.com/websockets/ws) server library for Node.js
 
 ## Features
 

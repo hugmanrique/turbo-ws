@@ -11,8 +11,8 @@ import {
   forwardEvent
 } from './util';
 
+import WebSocket from './socket';
 import { handleNegotiation, serializeExtensions } from './Extension';
-import inject from './socket';
 
 import { EMPTY_BUFFER } from './constants';
 
@@ -105,6 +105,8 @@ export default class Server extends EventEmitter {
     res.setHeader('Connection', 'upgrade');
     res.setHeader('Sec-WebSocket-Accept', key);
 
+    const ws = new WebSocket(this.options.maxPayload);
+
     const { extensions } = socket;
 
     if (extensions) {
@@ -112,16 +114,16 @@ export default class Server extends EventEmitter {
       res.setHeader('Sec-WebSocket-Extensions', value);
     }
 
+    this.emit('headers', res);
+
     // Finish the handshake but keep connection open
     res.end(EMPTY_BUFFER, 0);
-
-    // Inject sender and receiver
-    inject(socket, this.options.maxPayload);
 
     // Remove connection error listener
     socket.removeListener('error', onSocketError);
 
-    this.emit('connection', socket, req);
+    ws.start(socket, extensions);
+    this.emit('connection', ws, req);
   }
 
   // See if request should be handled by this server

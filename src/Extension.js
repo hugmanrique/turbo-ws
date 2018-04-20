@@ -34,7 +34,7 @@ export function handleNegotiation(server, socket, req) {
   const { extensions: negotiated } = socket;
 
   try {
-    const offers = parseExtensions(req.getHeader('Sec-WebSocket-Extensions'));
+    const offers = parse(req.getHeader('Sec-WebSocket-Extensions'));
 
     for (const Extension of extensions) {
       const extName = Extension.name;
@@ -57,20 +57,6 @@ export function handleNegotiation(server, socket, req) {
 
 function getOffers(offers, extensionName) {
   return offers.filter(({ name }) => name === extensionName);
-}
-
-/**
- * Parse the 'Sec-WebSocket-Extensions' header
- * @throws SyntaxError if the header is invalid.
- */
-function parseExtensions(header) {
-  const offers = [];
-
-  if (!header) {
-    return offers;
-  }
-
-  return parse(header);
 }
 
 /**

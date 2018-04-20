@@ -40,7 +40,7 @@ export function handleNegotiation(server, socket, req) {
       const extName = Extension.name;
       const offers = getOffers(offers, extName);
 
-      const accepted = extension.accept(offers);
+      const accepted = Extension.accept(offers);
 
       if (!accepted) {
         continue;

@@ -16,3 +16,6 @@ Thumbs.db
 .idea
 *.sublime-project
 *.sublime-workspace
+
+# TODO Remove
+/old

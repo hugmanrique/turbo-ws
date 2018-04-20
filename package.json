@@ -41,7 +41,7 @@
     "node": ">=8.10.0"
   },
   "dependencies": {
-    "@hugmanrique/ws-extensions": "0.0.1",
+    "@hugmanrique/ws-extensions": "0.0.2",
     "turbo-http": "^0.3.0",
     "utf-8-validate": "^4.0.0"
   },

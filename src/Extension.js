@@ -3,7 +3,7 @@ import { parse, serialize } from '@hugmanrique/ws-extensions';
 /* eslint-disable no-unused-vars */
 
 export default class Extension {
-  constructor(options, maxPayload) {
+  constructor(options = {}, maxPayload) {
     this.options = options;
     this.maxPayload = maxPayload;
   }
@@ -15,7 +15,7 @@ export default class Extension {
 
   /**
    * Accept an extension negotiation offer.
-   * @param {Array} offers Extension negotiation offers
+   * @param {Array} offers Extension negotiation offers. Contains parsed args for each offer.
    * @return {Object} Accepted params
    */
   static accept(offers) {}
@@ -38,9 +38,9 @@ export function handleNegotiation(server, socket, req) {
 
     for (const Extension of extensions) {
       const extName = Extension.name;
-      const offers = getOffers(offers, extName);
+      const extOffers = getOfferParams(offers, extName);
 
-      const accepted = Extension.accept(offers);
+      const accepted = Extension.accept(extOffers);
 
       if (!accepted) {
         continue;
@@ -55,8 +55,10 @@ export function handleNegotiation(server, socket, req) {
   }
 }
 
-function getOffers(offers, extensionName) {
-  return offers.filter(({ name }) => name === extensionName);
+function getOfferParams(offers, extensionName) {
+  return offers
+    .filter(({ name }) => name === extensionName)
+    .map(offer => offer.params);
 }
 
 /**
@@ -69,8 +71,12 @@ export function serializeExtensions(extensions) {
   let header = '';
 
   for (const [name, { options }] of extensions) {
-    header += serialize(name, options);
+    header += serialize(name, options) + ', ';
   }
 
-  return header;
+  if (!header) {
+    return header;
+  }
+
+  return header.substring(0, header.length - 2);
 }

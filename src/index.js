@@ -24,7 +24,7 @@ export default class Server extends EventEmitter {
     host,
     port,
     path = ''
-  }) {
+  } = {}) {
     super();
 
     if (!server && (!host || !port)) {

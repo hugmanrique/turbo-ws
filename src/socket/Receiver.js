@@ -1,3 +1,10 @@
+/* 
+ * Modification of the ws project. Copyright (c) 2011 Einar Otto Stangvik. 
+ * Available on https://github.com/websockets/ws/
+ * 
+ * This work is licensed under the terms of the MIT license.
+ */
+
 import { Writable } from 'stream';
 import { isValidUtf8, isValidStatusCode } from '../validate';
 import { unmask } from '../buffers';

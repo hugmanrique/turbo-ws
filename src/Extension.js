@@ -16,6 +16,11 @@ class Extension {
    */
   getName() {}
 
+  /**
+   * Accept an extension negotiation offer.
+   * @param {Array} offers Extension negotiation offers
+   * @return {Object} Accepted params
+   */
   accept(offers) {}
 
   processData(receiver, data, callback) {}
@@ -36,26 +41,23 @@ export function handleNegotiation(server, socket, req) {
 
     for (const extension of extensions) {
       const extName = extension.getName();
-      const bestOffer = getBestOffer(offers, extName);
+      const offers = getOffers(offers, extName);
 
-      if (!bestOffer) {
+      const accepted = extension.accept(offers);
+
+      if (!accepted) {
         continue;
       }
 
-      negotiated.set(extName, extension);
+      negotiated.set(extName, accepted);
     }
   } catch (err) {
     return err;
   }
 }
 
-function getBestOffer(offers, name) {
-  // The first offer is considered the best one
-  for (const offer of offers) {
-    if (offer.name === name) {
-      return offer;
-    }
-  }
+function getOffers(offers, extensionName) {
+  return offers.filter(({ name }) => name === extensionName);
 }
 
 /**

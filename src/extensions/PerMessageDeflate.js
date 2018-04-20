@@ -12,6 +12,8 @@ class PerMessageDeflate extends Extension {
   accept(offers) {}
 
   processData(receiver, data, callback) {
+    throw new Error('Not supported yet');
+
     if (this.compressed) {
       receiver.state = states.INFLATING;
       // TODO Decompress and call callback

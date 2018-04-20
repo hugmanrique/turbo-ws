@@ -11,6 +11,8 @@ import {
   forwardEvent
 } from './util';
 
+import { handleNegotiation } from './Extension';
+
 import { EMPTY_BUFFER } from './constants';
 
 export default class Server extends EventEmitter {
@@ -67,11 +69,11 @@ export default class Server extends EventEmitter {
       return closeConnection(socket, res, 400);
     }
 
-    /*for (const extension of this.extensions) {
+    const negotiationErr = handleNegotiation(this, socket, req);
 
-    }*/
-
-    // TODO Handle extension negotiation
+    if (negotiationErr) {
+      return closeConnection(socket, res, 400);
+    }
 
     this.upgradeConnection(req, res);
   }

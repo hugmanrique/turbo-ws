@@ -1,3 +1,5 @@
+import { parse } from '@hugmanrique/ws-extensions';
+
 /* eslint-disable no-unused-vars */
 
 class Extension {
@@ -19,170 +21,55 @@ class Extension {
   processData(receiver, data, callback) {}
 }
 
-export function handleNegotiation(server, socket, req) {}
+export function handleNegotiation(server, socket, req) {
+  const { extensions } = server;
 
-// Prettier pls
-const tokenChars = [
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0, // 0 - 15
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0, // 16 - 31
-  0,
-  1,
-  0,
-  1,
-  1,
-  1,
-  1,
-  1,
-  0,
-  0,
-  1,
-  1,
-  0,
-  1,
-  1,
-  0, // 32 - 47
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0, // 48 - 63
-  0,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1, // 64 - 79
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  0,
-  0,
-  0,
-  1,
-  1, // 80 - 95
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1, // 96 - 111
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  0,
-  1,
-  0,
-  1,
-  0 // 112 - 127
-];
+  if (!extensions.length) {
+    return;
+  }
+
+  socket.extensions = new Map();
+  const { extensions: negotiated } = socket;
+
+  try {
+    const offers = parseExtensions(req.getHeader('Sec-WebSocket-Extensions'));
+
+    for (const extension of extensions) {
+      const extName = extension.getName();
+      const bestOffer = getBestOffer(offers, extName);
+
+      if (!bestOffer) {
+        continue;
+      }
+
+      negotiated.set(extName, extension);
+    }
+  } catch (err) {
+    return err;
+  }
+}
+
+function getBestOffer(offers, name) {
+  // The first offer is considered the best one
+  for (const offer of offers) {
+    if (offer.name === name) {
+      return offer;
+    }
+  }
+}
 
 /**
  * Parse the 'Sec-WebSocket-Extensions' header
+ * @throws SyntaxError if the header is invalid.
  */
 function parseExtensions(header) {
-  const offers = {};
+  const offers = [];
 
   if (!header) {
     return offers;
   }
 
-  const params = {};
-  let mustUnescape = false;
-  let isEscaping = false;
-  let inQuotes = false;
-  let extensionName;
-  let paramName;
-  let start = -1;
-  let end = -1;
-
-  for (let i = 0; i < header.length; i++) {
-    const char = header.charCodeAt(i);
-
-    if (!extensionName) {
-      if (end === -1 && tokenChars[code] === 1) {
-        if (start === -1) {
-          start = i;
-        }
-      }
-    }
-  }
+  return parse(header);
 }
 
 export default Extension;

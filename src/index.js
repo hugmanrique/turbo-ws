@@ -12,6 +12,7 @@ import {
 } from './util';
 
 import { handleNegotiation, serializeExtensions } from './Extension';
+import inject from './socket';
 
 import { EMPTY_BUFFER } from './constants';
 
@@ -113,6 +114,9 @@ export default class Server extends EventEmitter {
 
     // Finish the handshake but keep connection open
     res.end(EMPTY_BUFFER, 0);
+
+    // Inject sender and receiver
+    inject(socket, this.options.maxPayload);
 
     // Remove connection error listener
     socket.removeListener('error', onSocketError);

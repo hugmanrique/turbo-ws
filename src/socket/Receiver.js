@@ -8,7 +8,7 @@ import {
   EMPTY_BUFFER
 } from '../constants';
 
-const statusCodeKey = Symbol('status-code');
+export const statusCodeKey = Symbol('status-code');
 const stopLoopKey = Symbol('stop-loop');
 
 export const states = {

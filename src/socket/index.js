@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import Receiver from './Receiver';
+import Receiver, { statusCodeKey } from './Receiver';
 import Sender from './Sender';
 
 import { states, CLOSE_TIMEOUT, EMPTY_BUFFER } from '../constants';
@@ -110,7 +110,7 @@ export default class WebSocket extends EventEmitter {
     receiver.on('error', err => {
       this.state = states.CLOSING;
 
-      this.closeCode = 'Unknown'; // TODO Create lookup table
+      this.closeCode = err[statusCodeKey];
       this.emit('error', err);
       socket.destroy();
     });

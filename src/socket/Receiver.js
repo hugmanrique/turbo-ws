@@ -246,21 +246,13 @@ class Receiver extends Writable {
     }
 
     // Let extensions process the data
-    for (const extension of this.extensions) {
-      const stopLoop = extension.processData(this, data, callback);
+    for (const [, extension] of this.extensions) {
+      const stopRead = extension.processData(this, data, callback);
 
-      if (stopLoop) {
+      if (stopRead) {
         return;
       }
     }
-
-    /*this.extensions.forEach(extension => extension.processData(data, callback));
-
-    if (this.compressed) {
-      this.state = states.INFLATING;
-      // TODO Decompress and call callback
-      return;
-    }*/
 
     if (data.length) {
       this.messageLength = this.totalPayloadLength;

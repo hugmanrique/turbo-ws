@@ -1,33 +1,30 @@
-import { parse } from '@hugmanrique/ws-extensions';
+import { parse, serialize } from '@hugmanrique/ws-extensions';
 
 /* eslint-disable no-unused-vars */
 
-class Extension {
-  constructor(options) {
+export default class Extension {
+  constructor(options, maxPayload) {
     this.options = options;
-  }
-
-  setup(maxPayload) {
     this.maxPayload = maxPayload;
   }
 
   /**
    * Get extension name
    */
-  getName() {}
+  static get name() {}
 
   /**
    * Accept an extension negotiation offer.
    * @param {Array} offers Extension negotiation offers
    * @return {Object} Accepted params
    */
-  accept(offers) {}
+  static accept(offers) {}
 
   processData(receiver, data, callback) {}
 }
 
 export function handleNegotiation(server, socket, req) {
-  const { extensions } = server;
+  const { extensions, options: { maxPayload } } = server;
 
   if (!extensions.length) {
     return;
@@ -39,8 +36,8 @@ export function handleNegotiation(server, socket, req) {
   try {
     const offers = parseExtensions(req.getHeader('Sec-WebSocket-Extensions'));
 
-    for (const extension of extensions) {
-      const extName = extension.getName();
+    for (const Extension of extensions) {
+      const extName = Extension.name;
       const offers = getOffers(offers, extName);
 
       const accepted = extension.accept(offers);
@@ -49,7 +46,9 @@ export function handleNegotiation(server, socket, req) {
         continue;
       }
 
-      negotiated.set(extName, accepted);
+      const instance = new Extension(accepted, maxPayload);
+
+      negotiated.set(extName, instance);
     }
   } catch (err) {
     return err;
@@ -74,4 +73,18 @@ function parseExtensions(header) {
   return parse(header);
 }
 
-export default Extension;
+/**
+ * Builds the Sec-WebSocket-Extension header field value.
+ *
+ * @param {Object} extensions A Map containing extName -> instance entries.
+ * @return {String} A string representing the given extension map.
+ */
+export function serializeExtensions(extensions) {
+  let header = '';
+
+  for (const [name, { options }] of extensions) {
+    header += serialize(name, options);
+  }
+
+  return header;
+}

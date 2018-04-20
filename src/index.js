@@ -11,7 +11,7 @@ import {
   forwardEvent
 } from './util';
 
-import { handleNegotiation } from './Extension';
+import { handleNegotiation, serializeExtensions } from './Extension';
 
 import { EMPTY_BUFFER } from './constants';
 
@@ -90,6 +90,7 @@ export default class Server extends EventEmitter {
   upgradeConnection(req, res) {
     const { socket } = req;
 
+    // Destroy socket if client already snt a FIN packet
     if (!socket.readable || !socket.writable) {
       return socket.destroy();
     }
@@ -102,6 +103,13 @@ export default class Server extends EventEmitter {
     res.setHeader('Upgrade', 'websocket');
     res.setHeader('Connection', 'upgrade');
     res.setHeader('Sec-WebSocket-Accept', key);
+
+    const { extensions } = socket;
+
+    if (extensions) {
+      const value = serializeExtensions(extensions);
+      res.setHeader('Sec-WebSocket-Extensions', value);
+    }
 
     // Finish the handshake but keep connection open
     res.end(EMPTY_BUFFER, 0);

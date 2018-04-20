@@ -6,11 +6,11 @@ export default class PerMessageDeflate extends Extension {
     throw new Error('Not supported yet');
   }
 
-  getName() {
+  static get name() {
     return 'permessage-deflate';
   }
 
-  /*accept(offers) {}
+  /*static accept(offers) {}
 
   processData(/*receiver, data, callback) {
     throw new Error('Not supported yet');

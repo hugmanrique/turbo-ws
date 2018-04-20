@@ -11,6 +11,16 @@ export const opCodes = {
   PONG: 0xa
 };
 
+export const states = {
+  CONNECTING: 1,
+  OPEN: 2,
+  CLOSING: 3,
+  CLOSED: 4
+};
+
+// Allow 30 seconds to complete the close handshake
+export const CLOSE_TIMEOUT = 30 * 1000;
+
 /**
  * Maximum safe integer in JavaScript is 2^53 - 1. turbo-ws
  * returns an error if payload length is greater than this number.

@@ -5,6 +5,9 @@ import { EMPTY_BUFFER, opCodes } from '../constants';
  * @see https://tools.ietf.org/html/rfc6455
  */
 export default class Sender {
+  /**
+   * @param {Object} socket A turbo-net connection
+   */
   constructor(socket) {
     this.socket = socket;
     this.firstFragment = true;

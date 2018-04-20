@@ -1,17 +1,18 @@
 import Extension from '../Extension';
-import { states } from '../socket/Receiver';
+//import { states } from '../socket/Receiver';
 
-class PerMessageDeflate extends Extension {
-  // TODO
-  //name = ''
-
-  getName() {
-    return '';
+export default class PerMessageDeflate extends Extension {
+  constructor() {
+    throw new Error('Not supported yet');
   }
 
-  accept(offers) {}
+  getName() {
+    return 'permessage-deflate';
+  }
 
-  processData(receiver, data, callback) {
+  /*accept(offers) {}
+
+  processData(/*receiver, data, callback) {
     throw new Error('Not supported yet');
 
     if (this.compressed) {
@@ -19,5 +20,5 @@ class PerMessageDeflate extends Extension {
       // TODO Decompress and call callback
       return true;
     }
-  }
+  }*/
 }
